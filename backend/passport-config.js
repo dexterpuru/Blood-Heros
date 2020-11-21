@@ -15,6 +15,7 @@ module.exports = function initializePassport(passport) {
           if (!(await bcrypt.compare(password, user.password))) {
             return done(null, false, { message: "Password Incorrect" });
           }
+           return done(null, user);
 
         } else {
           return done(null, false, { message: "Username Incorrect" });

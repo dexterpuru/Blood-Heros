@@ -8,13 +8,13 @@ const dbClient = require('../middleware/database_connection');
 const router = express.Router();
 
 // Login Page
-router.get(
+router.post(
   "/login",
   passport.authenticate("local", {
     failureFlash: true,
   }),
   (req, res) => {
-    res.send({ message: "authentication successfull", user: req.user });
+    res.send({ message: "authentication successful", user: req.user });
   }
 );
 
