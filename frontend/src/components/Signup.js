@@ -1,13 +1,34 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import "../stylesheets/signup.css";
+import fetch from "node-fetch";
+import { withRouter } from "react-router-dom";
 
-const onRegister = (e, state) => {
+async function onRegister(e, state, onchangeError, handleRedirect) {
   e.preventDefault();
-  console.log(state);
-};
+  const register = await fetch("http://localhost:5000/doctor/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      username: state.username,
+      password: state.password,
+      docId: state.id,
+      name: state.name,
+      hname: state.hospital,
+      medcouncil: state.medcouncil,
+    }),
+  }).then((data) => data.json());
+  console.log(register);
+  if (!register.data) {
+    onchangeError(register.message);
+  } else {
+    handleRedirect();
+  }
+}
 
-export class signup extends Component {
+class signup extends Component {
   constructor(props) {
     super(props);
 
@@ -23,6 +44,7 @@ export class signup extends Component {
       hospital: "",
       username: "",
       medcouncil: "",
+      error: "",
     };
   }
   onchangename = (e) => {
@@ -50,6 +72,14 @@ export class signup extends Component {
       hospital: e.target.value,
     });
   };
+  onchangeError = (msg) => {
+    this.setState({
+      error: msg,
+    });
+  };
+  handleRedirect = () => {
+    this.props.history.push("/login");
+  };
   onchangemedc = (e) => {
     console.log(e.target.value);
     this.setState({
@@ -62,8 +92,13 @@ export class signup extends Component {
         <div className="bgc"></div>
         <div className="form1">
           <h1 className="form-heading">CREATE ACCOUNT</h1>
+          {this.state.error && (
+            <p style={{ color: "red" }}>*{this.state.error}</p>
+          )}
           <form
-            onSubmit={(e) => onRegister(e, this.state)}
+            onSubmit={(e) =>
+              onRegister(e, this.state, this.onchangeError, this.handleRedirect)
+            }
             className="main-form"
           >
             <h1 className="error">{this.state.errors}</h1>
@@ -246,4 +281,4 @@ export class signup extends Component {
   }
 }
 
-export default signup;
+export default withRouter(signup);
