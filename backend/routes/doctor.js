@@ -52,7 +52,7 @@ router.post("/register", verify, (req, res, next) => {
 
             const queries = [
               {
-                query: 'INSERT INTO doctor (id, username, doctorid, name, hospital, medcouncil, email) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                query: 'INSERT INTO doctor (id, username, doctorid, name, hospital, medcouncil, email, created_date) VALUES (?, ?, ?, ?, ?, ?, ?, toTimeStamp(now()))',
                 params: [ id, username, docId, name, hname, medcouncil, email ]
               }, {
                 query: 'INSERT INTO doctor_credentials (id, username, password) VALUES (?, ?, ?)',
