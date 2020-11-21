@@ -18,7 +18,7 @@ router.get(
 );
 
 // Register Page
-router.get("/register", verify, (req, res) => {
+router.post("/register", verify, (req, res) => {
   if (req.verifyCode !== 200) {
     res.send({ message: "Doctor info can't be verified" });
   } else {

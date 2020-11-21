@@ -6,6 +6,7 @@ const passport = require("passport");
 const session = require("express-session");
 const User = require("./model/User");
 const flash = require("express-flash");
+const cassandra = require("cassandra-driver");
 
 require("dotenv").config();
 
@@ -30,6 +31,12 @@ mongoose
   .then(() => console.log("MongoDB Connected..."))
   .catch((err) => console.log(err));
 
+//const client = new cassandra.Client({
+//  contactPoints: ['h1', 'h2'],
+//  localDataCenter: 'datacenter1',
+//  keyspace: 'ks1'
+//});
+
 // Build-in Middlewares
 app.use(cors());
 app.use(bodyparser.json());
@@ -50,6 +57,7 @@ app.use(flash());
 //Routes
 app.use("/", require("./routes/index"));
 app.use("/doctor", require("./routes/doctor"));
+//app.use("/donor", require("./routes/donor"));
 
 const PORT = process.env.PORT || 5000;
 
