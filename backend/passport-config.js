@@ -1,26 +1,49 @@
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
-const User = require("./model/User");
+
+const dbClient = require('./middleware/database_connection');
 
 module.exports = function initializePassport(passport) {
   passport.use(
     new LocalStrategy((username, password, done) => {
-      User.findOne({ username }, async (err, user) => {
-        if (err) return done(err);
 
-        if (!user) return done(null, false, { message: "Email Incorrect" });
+      dbClient.execute("SELECT * FROM doctor_credentials WHERE username = ?", [username], { prepare: true })
+      .then(async (result) => {
+        if(result.rowLength > 0 ) {
+          const user = result.first();
+          
+          if (!(await bcrypt.compare(password, user.password))) {
+            return done(null, false, { message: "Password Incorrect" });
+          }
 
-        if (!(await bcrypt.compare(password, user.password))) {
-          return done(null, false, { message: "Password Incorrect" });
+        } else {
+          return done(null, false, { message: "Username Incorrect" });
         }
 
-        return done(null, user);
+      })
+      .catch(error => {
+        console.error("Internal error:" + error);
+        return done(err);
       });
     })
   );
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser((id, done) => {
-    return done(null, User.findById(id));
+    
+    dbClient.execute("SELECT * FROM doctor WHERE id = ?", [id], { prepare: true })
+    .then(result => {
+      if(result.rowLength > 0 ) {
+        const user = result.first();
+        
+        done(null, user);
+      } else {
+        done("No user", null);
+      }
+    })
+    .catch(error => {
+      done(error, null);
+    });
+
   });
 };
 

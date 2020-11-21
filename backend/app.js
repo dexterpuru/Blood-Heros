@@ -1,12 +1,12 @@
 const express = require("express");
 var cors = require("cors");
 var bodyparser = require("body-parser");
-const mongoose = require("mongoose");
 const passport = require("passport");
 const session = require("express-session");
-const User = require("./model/User");
 const flash = require("express-flash");
-const cassandra = require("cassandra-driver");
+
+const dbClient = require('./middleware/database_connection');
+
 
 require("dotenv").config();
 
@@ -16,20 +16,37 @@ const initializePassport = require("./passport-config");
 initializePassport(
   passport,
   (username) => {
-    return User.findOne({ username }).username === username;
+    dbClient.execute("SELECT * FROM doctor_credentials WHERE username = ?", [username], { prepare: true })
+    .then(result => {
+      if(result.rowLength > 0 ) {
+        const user = result.first();
+        return user.username === username;
+      } else {
+        return false;
+      }
+
+    })
+    .catch(error => {
+      return false;
+    });
   },
   (id) => {
-    return User.findById(id).id === id;
+    dbClient.execute("SELECT * FROM doctor WHERE id = ?", [id], { prepare: true })
+    .then(result => {
+      if(result.rowLength > 0 ) {
+        const user = result.first();
+        
+        return user.id === id;
+      } else {
+        return false;
+      }
+    })
+    .catch(error => {
+      return false;
+    });
   }
 );
 
-mongoose
-  .connect(process.env.MongoDB_URI, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-  })
-  .then(() => console.log("MongoDB Connected..."))
-  .catch((err) => console.log(err));
 
 //const client = new cassandra.Client({
 //  contactPoints: ['h1', 'h2'],
@@ -43,7 +60,7 @@ app.use(bodyparser.json());
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || "secret",
     resave: false,
     saveUninitialized: false,
   })
