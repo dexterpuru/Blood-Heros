@@ -34,14 +34,11 @@ module.exports = async (req, res, next) => {
   //console.log(fullResponse);
 
   const findDoc = fullResponse.data.find(
-    (item) => item[2] === req.body.docId && item
+    (item) => item[3] === req.body.medcouncil && item
   );
   if (findDoc) {
     console.log(findDoc);
-    if (
-      findDoc[3] === req.body.medcouncil &&
-      findDoc[4].includes(req.body.name)
-    ) {
+    if (findDoc[4].includes(req.body.name)) {
       req.verifyCode = 200;
     } else {
       req.verifyCode = 206;
