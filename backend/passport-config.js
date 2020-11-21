@@ -4,8 +4,8 @@ const User = require("./model/User");
 
 module.exports = function initializePassport(passport) {
   passport.use(
-    new LocalStrategy({ usernameField: "email" }, (email, password, done) => {
-      User.findOne({ email }, async (err, user) => {
+    new LocalStrategy((username, password, done) => {
+      User.findOne({ username }, async (err, user) => {
         if (err) return done(err);
 
         if (!user) return done(null, false, { message: "Email Incorrect" });

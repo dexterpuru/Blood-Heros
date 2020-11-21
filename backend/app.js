@@ -14,8 +14,8 @@ const app = express();
 const initializePassport = require("./passport-config");
 initializePassport(
   passport,
-  (email) => {
-    return User.findOne({ email }).email === email;
+  (username) => {
+    return User.findOne({ username }).username === username;
   },
   (id) => {
     return User.findById(id).id === id;

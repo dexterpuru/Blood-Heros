@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 
 const User = require("../model/User");
 const passport = require("passport");
-
+const verify = require("../middleware/users");
 const router = express.Router();
 
 // Login Page
@@ -18,31 +18,42 @@ router.get(
 );
 
 // Register Page
-router.get("/register", (req, res) => {
-  const { email, password } = req.body;
+router.get("/register", verify, (req, res) => {
+  if (req.verifyCode !== 200) {
+    res.send({ message: "Doctor info can't be verified" });
+  } else {
+    const { username, password, docId, name, hname, medcouncil } = req.body;
 
-  User.findOne({ email }).then((user) => {
-    if (user) {
-      res.send({ message: "Email already exists" });
-    } else {
-      const newUser = new User({ email, password });
+    User.findOne({ username }).then((user) => {
+      if (user) {
+        res.send({ message: "Username already exists" });
+      } else {
+        const newUser = new User({
+          username,
+          password,
+          docId,
+          name,
+          hname,
+          medcouncil,
+        });
 
-      // Hashing Pass
-      bcrypt.genSalt(10, (err, salt) =>
-        bcrypt.hash(newUser.password, salt, (err, hash) => {
-          if (err) throw err;
+        // Hashing Pass
+        bcrypt.genSalt(10, (err, salt) =>
+          bcrypt.hash(newUser.password, salt, (err, hash) => {
+            if (err) throw err;
 
-          newUser.password = hash;
-          newUser
-            .save()
-            .then((user) => {
-              res.send({ message: "New User Created", data: user });
-            })
-            .catch((err) => console.log(err));
-        })
-      );
-    }
-  });
+            newUser.password = hash;
+            newUser
+              .save()
+              .then((user) => {
+                res.send({ message: "New User Created", data: user });
+              })
+              .catch((err) => console.log(err));
+          })
+        );
+      }
+    });
+  }
 });
 
 module.exports = router;
